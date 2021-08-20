@@ -1,3 +1,5 @@
+> forked from https://github.com/ethereumjs/ethereumjs-wallet to maintain internal integrity
+
 # ethereumjs-wallet
 
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-wallet.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-wallet)
