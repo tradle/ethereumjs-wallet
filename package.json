@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/@tradle/ethereumjs-wallet",
   "dependencies": {
+    "@tradle/web3-provider-engine": "^13.2.9",
     "@web3-js/scrypt-shim": "^0.1.0",
     "aes-js": "^0.2.3",
     "bs58check": "^1.0.8",

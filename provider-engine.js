@@ -1,7 +1,7 @@
 'use strict'
 
 const inherits = require('util').inherits
-const HookedWalletEthTxSubprovider = require('web3-provider-engine/subproviders/hooked-wallet-ethtx')
+const HookedWalletEthTxSubprovider = require('@tradle/web3-provider-engine/subproviders/hooked-wallet-ethtx')
 
 module.exports = WalletSubprovider
 
