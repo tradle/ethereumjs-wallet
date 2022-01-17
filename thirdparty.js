@@ -133,7 +133,7 @@ Thirdparty.fromEtherWallet = function (input, password) {
 }
 
 Thirdparty.fromEtherCamp = function (passphrase) {
-  return new Wallet(ethUtil.sha3(Buffer.from(passphrase)))
+  return new Wallet(ethUtil.keccak256(Buffer.from(passphrase)))
 }
 
 Thirdparty.fromKryptoKit = function (entropy, password) {
@@ -175,7 +175,7 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
 
   var privKey
   if (type === 'd') {
-    privKey = ethUtil.sha256(entropy)
+    privKey = ethUtil.sha256(Buffer.from(entropy))
   } else if (type === 'q') {
     if (typeof password !== 'string') {
       throw new Error('Password required')

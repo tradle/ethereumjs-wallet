@@ -26,14 +26,14 @@
   },
   "homepage": "https://github.com/@tradle/ethereumjs-wallet",
   "dependencies": {
-    "@tradle/web3-provider-engine": "^14.0.0",
+    "@tradle/web3-provider-engine": "^16.0.3",
     "@web3-js/scrypt-shim": "^0.1.0",
-    "aes-js": "^0.2.3",
-    "bs58check": "^1.0.8",
-    "ethereumjs-util": "^4.4.0",
-    "hdkey": "^0.7.0",
-    "utf8": "^2.1.1",
-    "uuid": "^2.0.1"
+    "aes-js": "^3.1.2",
+    "bs58check": "^2.1.2",
+    "ethereumjs-util": "^6.2.1",
+    "hdkey": "^2.0.1",
+    "utf8": "^3.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
