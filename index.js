@@ -1,8 +1,8 @@
-var ethUtil = require('ethereumjs-util')
-var crypto = require('crypto')
-var scryptsy = require('@web3-js/scrypt-shim')
-var uuid = require('uuid')
-var bs58check = require('bs58check')
+const ethUtil = require('ethereumjs-util')
+const crypto = require('crypto')
+const scryptsy = require('@web3-js/scrypt-shim')
+const uuid = require('uuid')
+const bs58check = require('bs58check')
 
 function assert (val, msg) {
   if (!val) {
@@ -11,10 +11,10 @@ function assert (val, msg) {
 }
 
 function decipherBuffer (decipher, data) {
-  return Buffer.concat([ decipher.update(data), decipher.final() ])
+  return Buffer.concat([decipher.update(data), decipher.final()])
 }
 
-var Wallet = function (priv, pub) {
+const Wallet = function (priv, pub) {
   if (priv && pub) {
     throw new Error('Cannot supply both a private and a public key to the constructor')
   }
@@ -50,7 +50,7 @@ Object.defineProperty(Wallet.prototype, 'pubKey', {
 Wallet.generate = function (icapDirect) {
   if (icapDirect) {
     while (true) {
-      var privKey = crypto.randomBytes(32)
+      const privKey = crypto.randomBytes(32)
       if (ethUtil.privateToAddress(privKey)[0] === 0) {
         return new Wallet(privKey)
       }
@@ -66,8 +66,8 @@ Wallet.generateVanityAddress = function (pattern) {
   }
 
   while (true) {
-    var privKey = crypto.randomBytes(32)
-    var address = ethUtil.privateToAddress(privKey)
+    const privKey = crypto.randomBytes(32)
+    const address = ethUtil.privateToAddress(privKey)
 
     if (pattern.test(address.toString('hex'))) {
       return new Wallet(privKey)
@@ -108,12 +108,12 @@ Wallet.prototype.toV3 = function (password, opts) {
   assert(this._privKey, 'This is a public key only wallet')
 
   opts = opts || {}
-  var salt = opts.salt || crypto.randomBytes(32)
-  var iv = opts.iv || crypto.randomBytes(16)
+  const salt = opts.salt || crypto.randomBytes(32)
+  const iv = opts.iv || crypto.randomBytes(16)
 
-  var derivedKey
-  var kdf = opts.kdf || 'scrypt'
-  var kdfparams = {
+  let derivedKey
+  const kdf = opts.kdf || 'scrypt'
+  const kdfparams = {
     dklen: opts.dklen || 32,
     salt: salt.toString('hex')
   }
@@ -132,14 +132,14 @@ Wallet.prototype.toV3 = function (password, opts) {
     throw new Error('Unsupported kdf')
   }
 
-  var cipher = crypto.createCipheriv(opts.cipher || 'aes-128-ctr', derivedKey.slice(0, 16), iv)
+  const cipher = crypto.createCipheriv(opts.cipher || 'aes-128-ctr', derivedKey.slice(0, 16), iv)
   if (!cipher) {
     throw new Error('Unsupported cipher')
   }
 
-  var ciphertext = Buffer.concat([ cipher.update(this.privKey), cipher.final() ])
+  const ciphertext = Buffer.concat([cipher.update(this.privKey), cipher.final()])
 
-  var mac = ethUtil.keccak256(Buffer.concat([ derivedKey.slice(16, 32), Buffer.from(ciphertext, 'hex') ]))
+  const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext, 'hex')]))
 
   return {
     version: 3,
@@ -170,7 +170,7 @@ Wallet.prototype.getV3Filename = function (timestamp) {
    * Alternative manual way with padding and Date fields: http://stackoverflow.com/a/7244288/4964819
    *
    */
-  var ts = timestamp ? new Date(timestamp) : new Date()
+  const ts = timestamp ? new Date(timestamp) : new Date()
 
   return [
     'UTC--',
@@ -204,7 +204,7 @@ Wallet.fromPrivateKey = function (priv) {
 
 Wallet.fromExtendedPrivateKey = function (priv) {
   assert(priv.slice(0, 4) === 'xprv', 'Not an extended private key')
-  var tmp = bs58check.decode(priv)
+  const tmp = bs58check.decode(priv)
   assert(tmp[45] === 0, 'Invalid extended private key')
   return Wallet.fromPrivateKey(tmp.slice(46))
 }
@@ -212,7 +212,7 @@ Wallet.fromExtendedPrivateKey = function (priv) {
 // https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
 Wallet.fromV1 = function (input, password) {
   assert(typeof password === 'string')
-  var json = (typeof input === 'object') ? input : JSON.parse(input)
+  const json = (typeof input === 'object') ? input : JSON.parse(input)
 
   if (json.Version !== '1') {
     throw new Error('Not a V1 wallet')
@@ -222,33 +222,33 @@ Wallet.fromV1 = function (input, password) {
     throw new Error('Unsupported key derivation scheme')
   }
 
-  var kdfparams = json.Crypto.KeyHeader.KdfParams
-  var derivedKey = scryptsy(Buffer.from(password), Buffer.from(json.Crypto.Salt, 'hex'), kdfparams.N, kdfparams.R, kdfparams.P, kdfparams.DkLen)
+  const kdfparams = json.Crypto.KeyHeader.KdfParams
+  const derivedKey = scryptsy(Buffer.from(password), Buffer.from(json.Crypto.Salt, 'hex'), kdfparams.N, kdfparams.R, kdfparams.P, kdfparams.DkLen)
 
-  var ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
+  const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
 
-  var mac = ethUtil.keccak256(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
+  const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
 
   if (mac.toString('hex') !== json.Crypto.MAC) {
     throw new Error('Key derivation failed - possibly wrong passphrase')
   }
 
-  var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16), Buffer.from(json.Crypto.IV, 'hex'))
-  var seed = decipherBuffer(decipher, ciphertext)
+  const decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16), Buffer.from(json.Crypto.IV, 'hex'))
+  const seed = decipherBuffer(decipher, ciphertext)
 
   return new Wallet(seed)
 }
 
 Wallet.fromV3 = function (input, password, nonStrict) {
   assert(typeof password === 'string')
-  var json = (typeof input === 'object') ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
+  const json = (typeof input === 'object') ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
   if (json.version !== 3) {
     throw new Error('Not a V3 wallet')
   }
 
-  var derivedKey
-  var kdfparams
+  let derivedKey
+  let kdfparams
   if (json.crypto.kdf === 'scrypt') {
     kdfparams = json.crypto.kdfparams
 
@@ -266,15 +266,15 @@ Wallet.fromV3 = function (input, password, nonStrict) {
     throw new Error('Unsupported key derivation scheme')
   }
 
-  var ciphertext = Buffer.from(json.crypto.ciphertext, 'hex')
+  const ciphertext = Buffer.from(json.crypto.ciphertext, 'hex')
 
-  var mac = ethUtil.keccak256(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
+  const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
   if (mac.toString('hex') !== json.crypto.mac) {
     throw new Error('Key derivation failed - possibly wrong passphrase')
   }
 
-  var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'))
-  var seed = decipherBuffer(decipher, ciphertext, 'hex')
+  const decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'))
+  const seed = decipherBuffer(decipher, ciphertext, 'hex')
 
   return new Wallet(seed)
 }
@@ -285,20 +285,20 @@ Wallet.fromV3 = function (input, password, nonStrict) {
  */
 Wallet.fromEthSale = function (input, password) {
   assert(typeof password === 'string')
-  var json = (typeof input === 'object') ? input : JSON.parse(input)
+  const json = (typeof input === 'object') ? input : JSON.parse(input)
 
-  var encseed = Buffer.from(json.encseed, 'hex')
+  const encseed = Buffer.from(json.encseed, 'hex')
 
   // key derivation
-  var derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16)
+  const derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16)
 
   // seed decoding (IV is first 16 bytes)
   // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
   //       see also http://stackoverflow.com/a/31614770/4964819
-  var decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
-  var seed = decipherBuffer(decipher, encseed.slice(16))
+  const decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
+  const seed = decipherBuffer(decipher, encseed.slice(16))
 
-  var wallet = new Wallet(ethUtil.keccak256(seed))
+  const wallet = new Wallet(ethUtil.keccak256(seed))
   if (wallet.getAddress().toString('hex') !== json.ethaddr) {
     throw new Error('Decoded key mismatch - possibly wrong passphrase')
   }

@@ -1,9 +1,9 @@
-var Wallet = require('./index.js')
-var ethUtil = require('ethereumjs-util')
-var crypto = require('crypto')
-var scryptsy = require('@web3-js/scrypt-shim')
-var utf8 = require('utf8')
-var aesjs = require('aes-js')
+const Wallet = require('./index.js')
+const ethUtil = require('ethereumjs-util')
+const crypto = require('crypto')
+const scryptsy = require('@web3-js/scrypt-shim')
+const utf8 = require('utf8')
+const aesjs = require('aes-js')
 
 function assert (val, msg) {
   if (!val) {
@@ -12,10 +12,10 @@ function assert (val, msg) {
 }
 
 function decipherBuffer (decipher, data) {
-  return Buffer.concat([ decipher.update(data), decipher.final() ])
+  return Buffer.concat([decipher.update(data), decipher.final()])
 }
 
-var Thirdparty = {}
+const Thirdparty = {}
 
 /*
  * opts:
@@ -28,16 +28,16 @@ var Thirdparty = {}
  *
  * FIXME: not optimised at all
  */
-function evp_kdf (data, salt, opts) {
+function evp_kdf (data, salt, opts) { // eslint-disable-line camelcase
   // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
   function iter (block) {
-    var hash = crypto.createHash(opts.digest || 'md5')
+    let hash = crypto.createHash(opts.digest || 'md5')
     hash.update(block)
     hash.update(data)
     hash.update(salt)
     block = hash.digest()
 
-    for (var i = 1; i < (opts.count || 1); i++) {
+    for (let i = 1; i < (opts.count || 1); i++) {
       hash = crypto.createHash(opts.digest || 'md5')
       hash.update(block)
       block = hash.digest()
@@ -46,18 +46,18 @@ function evp_kdf (data, salt, opts) {
     return block
   }
 
-  var keysize = opts.keysize || 16
-  var ivsize = opts.ivsize || 16
+  const keysize = opts.keysize || 16
+  const ivsize = opts.ivsize || 16
 
-  var ret = []
+  const ret = []
 
-  var i = 0
+  let i = 0
   while (Buffer.concat(ret).length < (keysize + ivsize)) {
     ret[i] = iter((i === 0) ? Buffer.alloc(0) : ret[i - 1])
     i++
   }
 
-  var tmp = Buffer.concat(ret)
+  const tmp = Buffer.concat(ret)
 
   return {
     key: tmp.slice(0, keysize),
@@ -67,7 +67,7 @@ function evp_kdf (data, salt, opts) {
 
 // http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
 function decodeCryptojsSalt (input) {
-  var ciphertext = Buffer.from(input, 'base64')
+  const ciphertext = Buffer.from(input, 'base64')
   if (ciphertext.slice(0, 8).toString() === 'Salted__') {
     return {
       salt: ciphertext.slice(8, 16),
@@ -85,9 +85,9 @@ function decodeCryptojsSalt (input) {
  * and used on https://www.myetherwallet.com/
  */
 Thirdparty.fromEtherWallet = function (input, password) {
-  var json = (typeof input === 'object') ? input : JSON.parse(input)
+  const json = (typeof input === 'object') ? input : JSON.parse(input)
 
-  var privKey
+  let privKey
   if (!json.locked) {
     if (json.private.length !== 64) {
       throw new Error('Invalid private key length')
@@ -104,7 +104,7 @@ Thirdparty.fromEtherWallet = function (input, password) {
 
     // the "encrypted" version has the low 4 bytes
     // of the hash of the address appended
-    var cipher = json.encrypted ? json.private.slice(0, 128) : json.private
+    let cipher = json.encrypted ? json.private.slice(0, 128) : json.private
 
     // decode openssl ciphertext + salt encoding
     cipher = decodeCryptojsSalt(cipher)
@@ -114,16 +114,16 @@ Thirdparty.fromEtherWallet = function (input, password) {
     }
 
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
-    var evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
+    const evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    var decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
+    const decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
     privKey = decipherBuffer(decipher, Buffer.from(cipher.ciphertext))
 
     // NOTE: yes, they've run it through UTF8
     privKey = Buffer.from(utf8.decode(privKey.toString()), 'hex')
   }
 
-  var wallet = new Wallet(privKey)
+  const wallet = new Wallet(privKey)
 
   if (wallet.getAddressString() !== json.address) {
     throw new Error('Invalid private key or address')
@@ -151,10 +151,10 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
       }
     }
 
-    var res = ''
-    var tmp = ''
+    let res = ''
+    let tmp = ''
 
-    for (var i = 0; i < buf.length; i++) {
+    for (let i = 0; i < buf.length; i++) {
       if (buf[i] <= 0x7F) {
         res += decodeUtf8Char(tmp) + String.fromCharCode(buf[i])
         tmp = ''
@@ -170,10 +170,10 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
     entropy = entropy.slice(1)
   }
 
-  var type = entropy[0]
+  const type = entropy[0]
   entropy = entropy.slice(1)
 
-  var privKey
+  let privKey
   if (type === 'd') {
     privKey = ethUtil.sha256(Buffer.from(entropy))
   } else if (type === 'q') {
@@ -181,11 +181,11 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
       throw new Error('Password required')
     }
 
-    var encryptedSeed = ethUtil.sha256(Buffer.from(entropy.slice(0, 30)))
-    var checksum = entropy.slice(30, 46)
+    const encryptedSeed = ethUtil.sha256(Buffer.from(entropy.slice(0, 30)))
+    const checksum = entropy.slice(30, 46)
 
-    var salt = kryptoKitBrokenScryptSeed(encryptedSeed)
-    var aesKey = scryptsy(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
+    const salt = kryptoKitBrokenScryptSeed(encryptedSeed)
+    const aesKey = scryptsy(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
 
     /* FIXME: try to use `crypto` instead of `aesjs`
 
@@ -200,7 +200,7 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
     */
 
     /* eslint-disable new-cap */
-    var decipher = new aesjs.ModeOfOperation.ecb(aesKey)
+    const decipher = new aesjs.ModeOfOperation.ecb(aesKey)
     /* eslint-enable new-cap */
     privKey = Buffer.concat([
       decipher.decrypt(encryptedSeed.slice(0, 16)),
@@ -223,7 +223,7 @@ Thirdparty.fromQuorumWallet = function (passphrase, userid) {
   assert(passphrase.length >= 10)
   assert(userid.length >= 10)
 
-  var seed = passphrase + userid
+  let seed = passphrase + userid
   seed = crypto.pbkdf2Sync(seed, seed, 2000, 32, 'sha256')
 
   return new Wallet(seed)

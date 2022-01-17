@@ -8,7 +8,7 @@ function EthereumHDKey () {
  * Horrible wrapping.
  */
 function fromHDKey (hdkey) {
-  var ret = new EthereumHDKey()
+  const ret = new EthereumHDKey()
   ret._hdkey = hdkey
   return ret
 }
