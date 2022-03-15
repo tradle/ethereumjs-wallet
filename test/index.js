@@ -11,7 +11,7 @@ describe('.getPrivateKey()', function () {
   })
   it('should fail', function () {
     assert.throws(function () {
-      Wallet.fromPrivateKey(Buffer.from('001122', 'hex'))
+      Wallet.fromPrivateKey(Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex'))
     }, /^Error: Private key does not satisfy the curve requirements \(ie. it is invalid\)$/)
   })
 })
