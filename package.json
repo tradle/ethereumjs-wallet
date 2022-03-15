@@ -10,6 +10,20 @@
     "lint": "standard",
     "unit": "mocha ./test/**/*.js"
   },
+  "exports": {
+    ".": {
+      "require": "./index.js"
+    },
+    "./hdkey": {
+      "require": "./hdkey.js"
+    },
+    "./provider-engine": {
+      "require": "./provider-engine.js"
+    },
+    "./thirdparty": {
+      "require": "./thirdparty.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/@tradle/ethereumjs-wallet.git"
