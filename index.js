@@ -1,6 +1,6 @@
 const ethUtil = require('ethereumjs-util')
 const crypto = require('crypto')
-const scryptsy = require('@web3-js/scrypt-shim')
+const scryptsy = require('scrypt-js').syncScrypt
 const uuid = require('uuid')
 const bs58check = require('bs58check')
 

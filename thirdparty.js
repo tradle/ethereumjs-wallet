@@ -1,7 +1,7 @@
 const Wallet = require('./index.js')
 const ethUtil = require('ethereumjs-util')
 const crypto = require('crypto')
-const scryptsy = require('@web3-js/scrypt-shim')
+const scryptsy = require('scrypt-js').syncScrypt
 const utf8 = require('utf8')
 const aesjs = require('aes-js')
 
