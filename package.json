@@ -6,9 +6,10 @@
   "scripts": {
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "prepare": "npm run lint && npm run coverage",
+    "test": "npm run lint && npm run unit",
     "lint": "standard",
-    "prepublish": "npm run lint && npm run test",
-    "test": "mocha ./test/**/*.js"
+    "unit": "mocha ./test/**/*.js"
   },
   "repository": {
     "type": "git",
